@@ -20,7 +20,7 @@
         socket.on("connect", () => {
             // Test the connection with a simple message
             socket.emit("test", "Hello server");
-            // status.textContent = "Status: Connected to backend";
+            status.textContent = "Status: Connected to backend";
         });
         socket.on("connect_error", (error) => {
             console.error("Connection Error:", error);
