@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Audio Streaming</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Real-Time Audio Streaming</h1>
+    <button id="start">Start Recording</button>
+    <button id="stop" disabled>Stop Recording</button>
+    <p id="status">Status: Idle</p>
+
+    <script>
+        const socket = io("http://localhost:5001", {
+            withCredentials: true,
+            transports: ['websocket']
+        }); // Connect to the backend WebSocket server
+        socket.on("connect", () => {
+            // Test the connection with a simple message
+            socket.emit("test", "Hello server");
+            // status.textContent = "Status: Connected to backend";
+        });
+        socket.on("connect_error", (error) => {
+            console.error("Connection Error:", error);
+            status.textContent = "Status: Connection Error";
+        });
+        socket.on("disconnect", () => {
+            console.log("Disconnected from backend");
+            status.textContent = "Status: Disconnected from backend";
+        });
+        let mediaRecorder;
+        let isRecording = false;
+
+        // Get UI elements
+        const startButton = document.getElementById('start');
+        const stopButton = document.getElementById('stop');
+        const status = document.getElementById('status');
+
+        startButton.addEventListener('click', async () => {
+            if (isRecording) return;
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.onstart = () => {
+                    isRecording = true;
+                    status.textContent = "Status: Recording...";
+                    startButton.disabled = true;
+                    stopButton.disabled = false;
+                };
+
+                mediaRecorder.onstop = () => {
+                    isRecording = false;
+                    status.textContent = "Status: Idle";
+                    startButton.disabled = false;
+                    stopButton.disabled = true;
+                };
+
+                mediaRecorder.ondataavailable = (event) => {
+                    // Send audio chunks to the backend
+                    if (event.data.size > 0) {
+                        console.log(`Sending audio chunk: ${event.data.size} bytes`);
+                        // Convert Blob to ArrayBuffer before sending
+                        event.data.arrayBuffer().then(buffer => {
+                            socket.emit("audio_stream", buffer);
+                            console.log("Audio chunk sent to server");
+                        });
+                    }
+                };
+
+                mediaRecorder.start(1000); // Capture audio in 1-second chunks
+            } catch (error) {
+                console.error("Error accessing microphone:", error);
+            }
+        });
+
+        stopButton.addEventListener('click', () => {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+            }
+        });
+
+        socket.on("connect", () => {
+            console.log("Connected to backend");
+        });
+
+        socket.on("disconnect", () => {
+            console.log("Disconnected from backend");
+        });
+    </script>
+</body>
+</html>
