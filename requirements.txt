@@ -1,0 +1,7 @@
+flask
+flask-socketio
+whisper
+python-socketio
+openai
+asyncio
+ffmpeg
