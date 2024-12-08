@@ -7,3 +7,5 @@
 *.m4a
 .env
 .DS_Store
+
+backend/venv/
