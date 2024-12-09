@@ -7,5 +7,9 @@
 *.m4a
 .env
 .DS_Store
+<<<<<<< HEAD
 
 backend/venv/
+=======
+venv/
+>>>>>>> 9495757 (update gitignore)
