@@ -18,6 +18,7 @@ import dotenv
 
 dotenv.load_dotenv()
 
+
 os.environ['PYTHONWARNINGS']='ignore:Forking'
 
 client = OpenAI(
@@ -73,6 +74,7 @@ def process_gpt_queue():
                             - Use simple language and avoid the word "clarify", "salesperson", or "customer"
                          
                             Now, here is the line from the sales call, remember, in your response you must reference something specific from the line:
+
                          
                             {line}
                         """}
@@ -98,7 +100,8 @@ def main():
                         help="Energy level for mic to detect.", type=int)
     parser.add_argument("--record_timeout", default=2,
                         help="How real time the recording is in seconds.", type=float)
-    parser.add_argument("--phrase_timeout", default=5,
+    parser.add_argument("--phrase_timeout", default=2,
+
                         help="How much empty space between recordings before we "
                              "consider it a new line in the transcription.", type=float)
     if 'linux' in platform:
@@ -165,6 +168,7 @@ def main():
     gpt_thread.start()
     # Cue the user that we're ready to go.
     print("Model loaded * You can start your call now\n")
+
 
     while True:
         try:
