@@ -6,3 +6,4 @@ torch
 numpy
 openai
 openai-whisper
+python-dotenv

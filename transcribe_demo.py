@@ -14,11 +14,15 @@ from time import sleep
 from sys import platform
 import sys
 import time
+import dotenv
+
+dotenv.load_dotenv()
+
 
 os.environ['PYTHONWARNINGS']='ignore:Forking'
 
 client = OpenAI(
-    api_key="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"  
+    api_key=os.getenv("OPENAI_API_KEY")
 )
 
 gpt_queue = Queue()
@@ -36,7 +40,7 @@ def process_gpt_queue():
             if not gpt_queue.empty():
                 line = gpt_queue.get()
                 stream = client.chat.completions.create(
-                    model="gpt-4o-mini",
+                    model="gpt-3.5-turbo",
                     messages=[
                         {"role": "system", "content": """
                             You are an expert sales coaching assistant specialized in improving the effectiveness of sales calls. Your primary role is to evaluate a single line of dialogue from a sales call transcript and provide actionable recommendations for the salesperson to improve their communication, persuasion, and rapport-building skills.
@@ -69,7 +73,8 @@ def process_gpt_queue():
                             - Do not incluse any labels headers or any formatting.
                             - Use simple language and avoid the word "clarify", "salesperson", or "customer"
                          
-                            Now, here is the line from the sales call:
+                            Now, here is the line from the sales call, remember, in your response you must reference something specific from the line:
+
                          
                             {line}
                         """}
@@ -96,6 +101,7 @@ def main():
     parser.add_argument("--record_timeout", default=2,
                         help="How real time the recording is in seconds.", type=float)
     parser.add_argument("--phrase_timeout", default=2,
+
                         help="How much empty space between recordings before we "
                              "consider it a new line in the transcription.", type=float)
     if 'linux' in platform:
@@ -161,7 +167,8 @@ def main():
     gpt_thread = Thread(target=process_gpt_queue, daemon=True)
     gpt_thread.start()
     # Cue the user that we're ready to go.
-    print("Model loaded.\n")
+    print("Model loaded * You can start your call now\n")
+
 
     while True:
         try:
